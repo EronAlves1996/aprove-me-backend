@@ -20,7 +20,7 @@ export class IntegrationsController {
   @Post()
   async create(@Body() payableDTO: PayableDTO, @Res() response: Response) {
     const { assignor } = payableDTO;
-    const created = await this.payableService.create({
+    const { id } = await this.payableService.create({
       ...payableDTO,
       assignorData: {
         connect: {
@@ -28,7 +28,7 @@ export class IntegrationsController {
         },
       },
     });
-    response.setHeader('location', `/integrations/payable/${created.id}`);
+    response.setHeader('location', `/integrations/payable/${id}`);
     response.statusCode = 201;
   }
 }
