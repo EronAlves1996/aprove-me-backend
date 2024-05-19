@@ -21,7 +21,7 @@ export class AssignorController {
   async retrieve(@Param() { id }: { id: string }, @Res() response: Response) {
     const assignor = await this.assignorService.retrieve({ id });
     if (!assignor) {
-      response.statusCode = 404;
+      response.statusCode = HttpStatus.NOT_FOUND;
       response.json({ message: 'Not Found' });
       return;
     }
@@ -32,7 +32,7 @@ export class AssignorController {
   async create(@Body() assignorDTO: AssignorDTO, @Res() response: Response) {
     const { id } = await this.assignorService.create(assignorDTO);
     response.setHeader('location', `/integrations/payable/${id}`);
-    response.statusCode = 201;
+    response.statusCode = HttpStatus.CREATED;
     response.send();
   }
 
