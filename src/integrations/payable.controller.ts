@@ -1,9 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { PayableDTO } from '../dtos/PayableDTO';
 
-@Controller('integrations')
+@Controller('integrations/payable')
 export class IntegrationsController {
-  @Post('payable')
+  @Post()
   createPayable(@Body() payableDTO: PayableDTO) {
     return payableDTO;
   }
