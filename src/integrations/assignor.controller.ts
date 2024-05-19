@@ -12,9 +12,10 @@ export class AssignorController {
     const assignor = await this.assignorService.retrieveById(id);
     if (!assignor) {
       response.statusCode = 404;
-      return { message: 'Not Found' };
+      response.json({ message: 'Not Found' });
+      return;
     }
-    return assignor;
+    return response.json(assignor);
   }
 
   @Post()
@@ -22,5 +23,6 @@ export class AssignorController {
     const { id } = await this.assignorService.create(assignorDTO);
     response.setHeader('location', `/integrations/payable/${id}`);
     response.statusCode = 201;
+    response.send();
   }
 }

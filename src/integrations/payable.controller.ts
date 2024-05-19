@@ -4,7 +4,7 @@ import { PayableService } from 'src/services/payable.service';
 import { Response } from 'express';
 
 @Controller('integrations/payable')
-export class IntegrationsController {
+export class PayableController {
   constructor(private payableService: PayableService) {}
 
   @Get('/:id')
@@ -12,9 +12,10 @@ export class IntegrationsController {
     const payable = await this.payableService.retrieveById(id);
     if (!payable) {
       response.statusCode = 404;
-      return { message: 'Not Found' };
+      response.json({ message: 'Not Found' });
+      return;
     }
-    return payable;
+    return response.json(payable);
   }
 
   @Post()
@@ -30,5 +31,6 @@ export class IntegrationsController {
     });
     response.setHeader('location', `/integrations/payable/${id}`);
     response.statusCode = 201;
+    response.send();
   }
 }
