@@ -9,11 +9,11 @@ import {
   Put,
   Res,
 } from '@nestjs/common';
-import { PayableDTO } from '../dtos/PayableDTO';
-import { PayableService } from 'src/services/payable.service';
 import { Response } from 'express';
+import { AssignorService } from 'src/assignor/assignor.service';
 import { ENTITY_ID_NOT_EQUALS, NOT_FOUND } from 'src/messages';
-import { AssignorService } from 'src/services/assignor.service';
+import { PayableService } from './payable.service';
+import { PayableDTO } from './PayableDTO';
 
 @Controller('integrations/payable')
 export class PayableController {

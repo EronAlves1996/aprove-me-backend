@@ -10,9 +10,9 @@ import {
   Res,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { AssignorDTO } from 'src/dtos/AssignorDTO';
 import { ENTITY_ID_NOT_EQUALS, NOT_FOUND } from 'src/messages';
-import { AssignorService } from 'src/services/assignor.service';
+import { AssignorService } from './assignor.service';
+import { AssignorDTO } from './AssignorDTO';
 
 @Controller('integrations/assignor')
 export class AssignorController {
