@@ -11,4 +11,8 @@ export class PayableService {
       data,
     });
   }
+
+  async retrieveById(id: string): Promise<Payable> {
+    return this.prisma.payable.findFirst({ where: { id } });
+  }
 }
