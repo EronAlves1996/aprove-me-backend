@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AssignorDTO } from 'src/dtos/AssignorDTO';
+import { ENTITY_ID_NOT_EQUALS, NOT_FOUND } from 'src/messages';
 import { AssignorService } from 'src/services/assignor.service';
 
 @Controller('integrations/assignor')
@@ -22,7 +23,7 @@ export class AssignorController {
     const assignor = await this.assignorService.retrieve({ id });
     if (!assignor) {
       response.statusCode = HttpStatus.NOT_FOUND;
-      response.json({ message: 'Not Found' });
+      response.json(NOT_FOUND);
       return;
     }
     return response.json(assignor);
@@ -44,10 +45,7 @@ export class AssignorController {
   ) {
     if (id !== assignorDTO.id) {
       response.statusCode = HttpStatus.BAD_REQUEST;
-      response.json({
-        message:
-          'Operation permitted only on entity specified in path param. Verify your input and try again',
-      });
+      response.json(ENTITY_ID_NOT_EQUALS);
       return;
     }
 
