@@ -6,7 +6,11 @@ import { PrismaService } from 'src/prisma.service';
 export class AssignorService {
   constructor(private prismaService: PrismaService) {}
 
-  retrieveById(id: string): Promise<Assignor> {
+  async exists(where: Prisma.AssignorWhereUniqueInput): Promise<Boolean> {
+    return (await this.prismaService.assignor.count({ where })) > 0;
+  }
+
+  retrieve(where: Prisma.AssignorWhereUniqueInput): Promise<Assignor> {
     return this.prismaService.assignor.findFirst({
       select: {
         document: true,
@@ -15,11 +19,25 @@ export class AssignorService {
         name: true,
         phone: true,
       },
-      where: { id },
+      where,
     });
   }
 
   create(data: Prisma.AssignorCreateWithoutPayableInput): Promise<Assignor> {
     return this.prismaService.assignor.create({ data });
+  }
+
+  async update({
+    data,
+    where,
+  }: {
+    data: Prisma.AssignorCreateWithoutPayableInput;
+    where: Prisma.AssignorWhereUniqueInput;
+  }): Promise<void> {
+    this.prismaService.assignor.update({ data, where });
+  }
+
+  async delete(where: Prisma.AssignorWhereUniqueInput): Promise<void> {
+    this.prismaService.assignor.delete({ where });
   }
 }
