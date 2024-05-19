@@ -12,7 +12,7 @@ import {
 import { PayableDTO } from '../dtos/PayableDTO';
 import { PayableService } from 'src/services/payable.service';
 import { Response } from 'express';
-import { ENTITY_ID_NOT_EQUALS } from 'src/messages';
+import { ENTITY_ID_NOT_EQUALS, NOT_FOUND } from 'src/messages';
 
 @Controller('integrations/payable')
 export class PayableController {
@@ -22,8 +22,8 @@ export class PayableController {
   async retrieve(@Param() { id }: { id: string }, @Res() response: Response) {
     const payable = await this.payableService.retrieve({ id });
     if (!payable) {
-      response.statusCode = 404;
-      response.json({ message: 'Not Found' });
+      response.statusCode = HttpStatus.NOT_FOUND;
+      response.json(NOT_FOUND);
       return;
     }
     return response.json(payable);
@@ -43,7 +43,7 @@ export class PayableController {
       },
     });
     response.setHeader('location', `/integrations/payable/${createdId}`);
-    response.statusCode = 201;
+    response.statusCode = HttpStatus.CREATED;
     response.send();
   }
 
