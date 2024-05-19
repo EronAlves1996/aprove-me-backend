@@ -13,10 +13,14 @@ import { PayableDTO } from '../dtos/PayableDTO';
 import { PayableService } from 'src/services/payable.service';
 import { Response } from 'express';
 import { ENTITY_ID_NOT_EQUALS, NOT_FOUND } from 'src/messages';
+import { AssignorService } from 'src/services/assignor.service';
 
 @Controller('integrations/payable')
 export class PayableController {
-  constructor(private payableService: PayableService) {}
+  constructor(
+    private payableService: PayableService,
+    private assignorService: AssignorService,
+  ) {}
 
   @Get('/:id')
   async retrieve(@Param() { id }: { id: string }, @Res() response: Response) {
@@ -32,6 +36,9 @@ export class PayableController {
   @Post()
   async create(@Body() payableDTO: PayableDTO, @Res() response: Response) {
     const { assignor, emissionDate, id, value } = payableDTO;
+
+    if (!this.assignorExists(assignor, response)) return;
+
     const { id: createdId } = await this.payableService.create({
       id,
       emissionDate,
@@ -58,29 +65,42 @@ export class PayableController {
       response.json(ENTITY_ID_NOT_EQUALS);
       return;
     }
-    if (await this.payableService.exists({ id })) {
-      const { assignor, emissionDate, value } = data;
-      await this.payableService.update({
-        where: { id },
-        data: {
-          id,
-          emissionDate,
-          value,
-          assignorData: {
-            connect: {
-              id: assignor,
-            },
-          },
-        },
-      });
-      response.send();
+    if (!(await this.payableService.exists({ id }))) {
+      await this.create(data, response);
       return;
     }
-    await this.create(data, response);
+
+    const { assignor, emissionDate, value } = data;
+
+    if (!this.assignorExists(assignor, response)) return;
+
+    await this.payableService.update({
+      where: { id },
+      data: {
+        id,
+        emissionDate,
+        value,
+        assignorData: {
+          connect: {
+            id: assignor,
+          },
+        },
+      },
+    });
+    response.send();
   }
 
   @Delete('/:id')
   async delete(@Param() { id }: { id: string }) {
     await this.payableService.delete({ id });
+  }
+
+  async assignorExists(id: string, response: Response): Promise<boolean> {
+    const exists = await this.assignorService.exists({ id });
+    if (!exists) {
+      response.statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
+      response.json({ message: "The specified assignor doesn't exists" });
+    }
+    return exists;
   }
 }

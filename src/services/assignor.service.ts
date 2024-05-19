@@ -6,7 +6,7 @@ import { PrismaService } from 'src/prisma.service';
 export class AssignorService {
   constructor(private prismaService: PrismaService) {}
 
-  async exists(where: Prisma.AssignorWhereUniqueInput): Promise<Boolean> {
+  async exists(where: Prisma.AssignorWhereUniqueInput): Promise<boolean> {
     return (await this.prismaService.assignor.count({ where })) > 0;
   }
 
