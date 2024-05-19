@@ -15,6 +15,7 @@ export function IsCpfOrCnpj(validationOptions?: ValidationOptions) {
           const stripped = value.replace(/\D/g, '');
           return stripped.length === 11 || stripped.length === 14;
         },
+        defaultMessage: () => '$property is not CPF or CNPJ',
       },
     });
   };
