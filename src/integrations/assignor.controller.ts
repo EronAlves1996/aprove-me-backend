@@ -49,13 +49,13 @@ export class AssignorController {
       return;
     }
 
-    if (await this.assignorService.exists({ id })) {
-      await this.assignorService.update({ data: assignorDTO, where: { id } });
-      response.send();
+    if (!(await this.assignorService.exists({ id }))) {
+      await this.create(assignorDTO, response);
       return;
     }
 
-    await this.create(assignorDTO, response);
+    await this.assignorService.update({ data: assignorDTO, where: { id } });
+    response.send();
   }
 
   @Delete('/:id')

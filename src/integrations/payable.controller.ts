@@ -95,7 +95,10 @@ export class PayableController {
     await this.payableService.delete({ id });
   }
 
-  async assignorExists(id: string, response: Response): Promise<boolean> {
+  private async assignorExists(
+    id: string,
+    response: Response,
+  ): Promise<boolean> {
     const exists = await this.assignorService.exists({ id });
     if (!exists) {
       response.statusCode = HttpStatus.UNPROCESSABLE_ENTITY;
