@@ -37,7 +37,7 @@ export class PayableController {
   async create(@Body() payableDTO: PayableDTO, @Res() response: Response) {
     const { assignor, emissionDate, id, value } = payableDTO;
 
-    if (!this.assignorExists(assignor, response)) return;
+    if (!(await this.assignorExists(assignor, response))) return;
 
     const { id: createdId } = await this.payableService.create({
       id,
