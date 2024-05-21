@@ -7,6 +7,7 @@ import { AssignorService } from 'src/assignor/assignor.service';
 import { AssignorModule } from 'src/assignor/assignor.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { HttpStatus } from '@nestjs/common';
+import { NOT_FOUND } from 'src/messages';
 
 const mockResponse = () => {
   const mockRes = {
@@ -89,5 +90,17 @@ describe('PayableController', () => {
     const mockRes = mockResponse();
     await controller.retrieve({ id }, mockRes as any);
     expect(mockRes.json).toHaveBeenCalledWith(entity);
+  });
+
+  it('should return 404 for non existent payable', async () => {
+    const { id } = entity;
+    jest
+      .spyOn(prismaService.payable, 'findFirst')
+      .mockImplementation((_) => Promise.resolve(null) as any);
+
+    const mockRes = mockResponse();
+    await controller.retrieve({ id }, mockRes as any);
+    expect(mockRes.statusCode).toBe(HttpStatus.NOT_FOUND);
+    expect(mockRes.json).toHaveBeenCalledWith(NOT_FOUND);
   });
 });
