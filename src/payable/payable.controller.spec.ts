@@ -4,15 +4,34 @@ import { PayableService } from './payable.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { randomUUID } from 'crypto';
 import { AssignorService } from 'src/assignor/assignor.service';
-import { Response, response } from 'express';
 import { AssignorModule } from 'src/assignor/assignor.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { HttpStatus } from '@nestjs/common';
+
+const mockResponse = () => {
+  const mockRes = {
+    statusCode: 0,
+    send: () => {},
+    setHeader: () => {},
+    json: () => {},
+  };
+  mockRes.send = jest.fn().mockReturnValue(mockRes);
+  mockRes.setHeader = jest.fn().mockReturnValue(mockRes);
+  mockRes.json = jest.fn().mockReturnValue(mockRes);
+  return mockRes;
+};
 
 describe('PayableController', () => {
   let controller: PayableController;
   let prismaService: PrismaService;
   let assignorService: AssignorService;
+
+  const entity = {
+    id: randomUUID(),
+    assignor: randomUUID(),
+    emissionDate: new Date().toString(),
+    value: 2.5,
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -31,7 +50,7 @@ describe('PayableController', () => {
   });
 
   it('should create a new payable', async () => {
-    const id = randomUUID();
+    const { id } = entity;
 
     const creationSpy = jest
       .spyOn(prismaService.payable, 'create')
@@ -43,21 +62,7 @@ describe('PayableController', () => {
       .spyOn(assignorService, 'exists')
       .mockImplementation((_) => Promise.resolve(true));
 
-    const entity = {
-      id: id,
-      assignor: randomUUID(),
-      emissionDate: new Date().toString(),
-      value: 2.5,
-    };
-
-    const mockRes = {
-      statusCode: 0,
-      send: () => {},
-      setHeader: () => {},
-    };
-    mockRes.send = jest.fn().mockReturnValue(mockRes);
-    mockRes.setHeader = jest.fn().mockReturnValue(mockRes);
-
+    const mockRes = mockResponse();
     await controller.create(entity, mockRes as any);
     expect(mockRes.statusCode).toBe(HttpStatus.CREATED);
     expect(mockRes.setHeader).toHaveBeenCalledWith(
@@ -74,5 +79,15 @@ describe('PayableController', () => {
       },
     });
     expect(assignorExistsSpy).toHaveBeenCalledWith({ id: entity.assignor });
+  });
+
+  it('should consult a payable by id', async () => {
+    const { id } = entity;
+    jest
+      .spyOn(prismaService.payable, 'findFirst')
+      .mockImplementation((_) => Promise.resolve(entity) as any);
+    const mockRes = mockResponse();
+    await controller.retrieve({ id }, mockRes as any);
+    expect(mockRes.json).toHaveBeenCalledWith(entity);
   });
 });
