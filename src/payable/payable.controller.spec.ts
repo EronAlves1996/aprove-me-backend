@@ -46,6 +46,10 @@ describe('PayableController', () => {
     assignorService = module.get<AssignorService>(AssignorService);
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
@@ -110,5 +114,37 @@ describe('PayableController', () => {
     await controller.retrieve({ id }, mockRes as any);
     expect(mockRes.statusCode).toBe(HttpStatus.NOT_FOUND);
     expect(mockRes.json).toHaveBeenCalledWith(NOT_FOUND);
+  });
+
+  it('should update a record that already exists', async () => {
+    const existsSpy = jest
+      .spyOn(prismaService.payable, 'count')
+      .mockResolvedValue(1 as any);
+    const assignorExistsSpy = jest
+      .spyOn(assignorService, 'exists')
+      .mockResolvedValue(true);
+    const updateSpy = jest
+      .spyOn(prismaService.payable, 'update')
+      .mockResolvedValue(entity as any);
+
+    const res = mockResponse();
+    await controller.createOrUpdate({ id: entity.id }, entity, res as any);
+
+    expect(existsSpy).toHaveBeenCalledWith({ where: { id: entity.id } });
+    expect(assignorExistsSpy).toHaveBeenCalledWith({ id: entity.assignor });
+    expect(updateSpy).toHaveBeenCalledWith({
+      where: { id: entity.id },
+      data: {
+        id: entity.id,
+        emissionDate: entity.emissionDate,
+        value: entity.value,
+        assignorData: {
+          connect: {
+            id: entity.assignor,
+          },
+        },
+      },
+    });
+    expect(res.send).toHaveBeenCalled();
   });
 });
