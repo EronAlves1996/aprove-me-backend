@@ -72,7 +72,7 @@ export class PayableController {
 
     const { assignor, emissionDate, value } = data;
 
-    if (!this.assignorExists(assignor, response)) return;
+    if (!(await this.assignorExists(assignor, response))) return;
 
     await this.payableService.update({
       where: { id },
