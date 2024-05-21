@@ -30,7 +30,7 @@ describe('PayableController', () => {
   const entity = {
     id: randomUUID(),
     assignor: randomUUID(),
-    emissionDate: new Date().toString(),
+    emissionDate: new Date().toISOString(),
     value: 2.5,
   };
 
@@ -55,13 +55,11 @@ describe('PayableController', () => {
 
     const creationSpy = jest
       .spyOn(prismaService.payable, 'create')
-      .mockImplementation((_: any) => {
-        return { id } as any;
-      });
+      .mockReturnValue({ id } as any);
 
     const assignorExistsSpy = jest
       .spyOn(assignorService, 'exists')
-      .mockImplementation((_) => Promise.resolve(true));
+      .mockResolvedValue(true);
 
     const mockRes = mockResponse();
     await controller.create(entity, mockRes as any);
@@ -82,11 +80,21 @@ describe('PayableController', () => {
     expect(assignorExistsSpy).toHaveBeenCalledWith({ id: entity.assignor });
   });
 
+  it('should return 422 for non existent assignor', async () => {
+    jest.spyOn(assignorService, 'exists').mockResolvedValue(false);
+    const mockRes = mockResponse();
+    await controller.create(entity, mockRes as any);
+    expect(mockRes.statusCode).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
+    expect(mockRes.json).toHaveBeenCalledWith({
+      message: "The specified assignor doesn't exists",
+    });
+  });
+
   it('should consult a payable by id', async () => {
     const { id } = entity;
     jest
       .spyOn(prismaService.payable, 'findFirst')
-      .mockImplementation((_) => Promise.resolve(entity) as any);
+      .mockResolvedValue(entity as any);
     const mockRes = mockResponse();
     await controller.retrieve({ id }, mockRes as any);
     expect(mockRes.json).toHaveBeenCalledWith(entity);
@@ -96,7 +104,7 @@ describe('PayableController', () => {
     const { id } = entity;
     jest
       .spyOn(prismaService.payable, 'findFirst')
-      .mockImplementation((_) => Promise.resolve(null) as any);
+      .mockResolvedValue(null as any);
 
     const mockRes = mockResponse();
     await controller.retrieve({ id }, mockRes as any);
