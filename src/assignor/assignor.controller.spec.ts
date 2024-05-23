@@ -22,6 +22,10 @@ describe('AssignorController', () => {
     prismaService = module.get<PrismaService>(PrismaService);
   });
 
+  afterEach(() => {
+    jest.resetAllMocks();
+  });
+
   const entity = {
     id: randomUUID(),
     document: '123.243.232-20',
@@ -46,5 +50,12 @@ describe('AssignorController', () => {
     );
     expect(res.statusCode).toBe(HttpStatus.CREATED);
     expect(createSpy).toHaveBeenCalledWith({ data: entity });
+  });
+
+  it('should retrieve an assignor', async () => {
+    jest.spyOn(prismaService.assignor, 'findFirst').mockResolvedValue(entity);
+    const response = mockResponse();
+    await controller.retrieve({ id: entity.id }, response as any);
+    expect(response.json).toHaveBeenCalledWith(entity);
   });
 });
