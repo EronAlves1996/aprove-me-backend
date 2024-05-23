@@ -147,4 +147,35 @@ describe('PayableController', () => {
     });
     expect(res.send).toHaveBeenCalled();
   });
+
+  it("should create a record when try to update and don't exists", async () => {
+    jest.spyOn(prismaService.payable, 'count').mockResolvedValue(0 as any);
+    jest.spyOn(assignorService, 'exists').mockResolvedValue(true);
+    const createSpy = jest
+      .spyOn(prismaService.payable, 'create')
+      .mockResolvedValue(entity as any);
+    const updateSpy = jest
+      .spyOn(prismaService.payable, 'update')
+      .mockResolvedValue(entity as any);
+
+    const res = mockResponse();
+    await controller.createOrUpdate({ id: entity.id }, entity, res as any);
+    expect(res.setHeader).toHaveBeenCalledWith(
+      'location',
+      `/integrations/payable/${entity.id}`,
+    );
+    expect(updateSpy).toHaveBeenCalledTimes(0);
+    expect(createSpy).toHaveBeenCalledWith({
+      data: {
+        id: entity.id,
+        emissionDate: entity.emissionDate,
+        value: entity.value,
+        assignorData: {
+          connect: {
+            id: entity.assignor,
+          },
+        },
+      },
+    });
+  });
 });
