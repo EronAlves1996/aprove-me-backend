@@ -8,19 +8,7 @@ import { AssignorModule } from 'src/assignor/assignor.module';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { HttpStatus } from '@nestjs/common';
 import { NOT_FOUND } from 'src/messages';
-
-const mockResponse = () => {
-  const mockRes = {
-    statusCode: 0,
-    send: () => {},
-    setHeader: () => {},
-    json: () => {},
-  };
-  mockRes.send = jest.fn().mockReturnValue(mockRes);
-  mockRes.setHeader = jest.fn().mockReturnValue(mockRes);
-  mockRes.json = jest.fn().mockReturnValue(mockRes);
-  return mockRes;
-};
+import { mockResponse } from 'src/mock-response';
 
 describe('PayableController', () => {
   let controller: PayableController;
