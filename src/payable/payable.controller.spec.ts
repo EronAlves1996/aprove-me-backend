@@ -50,6 +50,9 @@ describe('PayableController', () => {
     jest.restoreAllMocks();
   });
 
+  const payableExistsSpy = () => jest.spyOn(prismaService.payable, 'count');
+  const assignorExistsSpy = () => jest.spyOn(assignorService, 'exists');
+
   it('should be defined', () => {
     expect(controller).toBeDefined();
   });
@@ -61,9 +64,7 @@ describe('PayableController', () => {
       .spyOn(prismaService.payable, 'create')
       .mockReturnValue({ id } as any);
 
-    const assignorExistsSpy = jest
-      .spyOn(assignorService, 'exists')
-      .mockResolvedValue(true);
+    const assignorSpy = assignorExistsSpy().mockResolvedValue(true as any);
 
     const mockRes = mockResponse();
     await controller.create(entity, mockRes as any);
@@ -81,11 +82,11 @@ describe('PayableController', () => {
         assignorData: { connect: { id: entity.assignor } },
       },
     });
-    expect(assignorExistsSpy).toHaveBeenCalledWith({ id: entity.assignor });
+    expect(assignorSpy).toHaveBeenCalledWith({ id: entity.assignor });
   });
 
   it('should return 422 for non existent assignor', async () => {
-    jest.spyOn(assignorService, 'exists').mockResolvedValue(false);
+    assignorExistsSpy().mockResolvedValue(false);
     const mockRes = mockResponse();
     await controller.create(entity, mockRes as any);
     expect(mockRes.statusCode).toBe(HttpStatus.UNPROCESSABLE_ENTITY);
@@ -94,11 +95,11 @@ describe('PayableController', () => {
     });
   });
 
+  const getEntitySpy = () => jest.spyOn(prismaService.payable, 'findFirst');
+
   it('should consult a payable by id', async () => {
     const { id } = entity;
-    jest
-      .spyOn(prismaService.payable, 'findFirst')
-      .mockResolvedValue(entity as any);
+    getEntitySpy().mockResolvedValue(entity as any);
     const mockRes = mockResponse();
     await controller.retrieve({ id }, mockRes as any);
     expect(mockRes.json).toHaveBeenCalledWith(entity);
@@ -106,10 +107,7 @@ describe('PayableController', () => {
 
   it('should return 404 for non existent payable', async () => {
     const { id } = entity;
-    jest
-      .spyOn(prismaService.payable, 'findFirst')
-      .mockResolvedValue(null as any);
-
+    getEntitySpy().mockResolvedValue(null as any);
     const mockRes = mockResponse();
     await controller.retrieve({ id }, mockRes as any);
     expect(mockRes.statusCode).toBe(HttpStatus.NOT_FOUND);
@@ -117,12 +115,8 @@ describe('PayableController', () => {
   });
 
   it('should update a record that already exists', async () => {
-    const existsSpy = jest
-      .spyOn(prismaService.payable, 'count')
-      .mockResolvedValue(1 as any);
-    const assignorExistsSpy = jest
-      .spyOn(assignorService, 'exists')
-      .mockResolvedValue(true);
+    const existsSpy = payableExistsSpy().mockResolvedValue(1 as any);
+    const assignorSpy = assignorExistsSpy().mockResolvedValue(true);
     const updateSpy = jest
       .spyOn(prismaService.payable, 'update')
       .mockResolvedValue(entity as any);
@@ -131,7 +125,7 @@ describe('PayableController', () => {
     await controller.createOrUpdate({ id: entity.id }, entity, res as any);
 
     expect(existsSpy).toHaveBeenCalledWith({ where: { id: entity.id } });
-    expect(assignorExistsSpy).toHaveBeenCalledWith({ id: entity.assignor });
+    expect(assignorSpy).toHaveBeenCalledWith({ id: entity.assignor });
     expect(updateSpy).toHaveBeenCalledWith({
       where: { id: entity.id },
       data: {
@@ -149,8 +143,8 @@ describe('PayableController', () => {
   });
 
   it("should create a record when try to update and don't exists", async () => {
-    jest.spyOn(prismaService.payable, 'count').mockResolvedValue(0 as any);
-    jest.spyOn(assignorService, 'exists').mockResolvedValue(true);
+    payableExistsSpy().mockResolvedValue(0);
+    assignorExistsSpy().mockResolvedValue(true);
     const createSpy = jest
       .spyOn(prismaService.payable, 'create')
       .mockResolvedValue(entity as any);
@@ -160,6 +154,7 @@ describe('PayableController', () => {
 
     const res = mockResponse();
     await controller.createOrUpdate({ id: entity.id }, entity, res as any);
+    expect(res.statusCode).toBe(HttpStatus.CREATED);
     expect(res.setHeader).toHaveBeenCalledWith(
       'location',
       `/integrations/payable/${entity.id}`,
@@ -177,5 +172,13 @@ describe('PayableController', () => {
         },
       },
     });
+  });
+
+  it('should delete a payable', async () => {
+    const deleteSpy = jest
+      .spyOn(prismaService.payable, 'delete')
+      .mockResolvedValue(null);
+    await controller.delete({ id: entity.id });
+    expect(deleteSpy).toHaveBeenCalledWith({ where: { id: entity.id } });
   });
 });
