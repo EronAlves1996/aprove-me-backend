@@ -32,7 +32,7 @@ export class AssignorController {
   @Post()
   async create(@Body() assignorDTO: AssignorDTO, @Res() response: Response) {
     const { id } = await this.assignorService.create(assignorDTO);
-    response.setHeader('location', `/integrations/payable/${id}`);
+    response.setHeader('location', `/integrations/assignor/${id}`);
     response.statusCode = HttpStatus.CREATED;
     response.send();
   }
